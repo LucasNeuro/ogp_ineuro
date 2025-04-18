@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I-Neuro | Assistente Virtual</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+    
+    <!-- Marked.js para formatação Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Adiciona MathJax para renderização matemática -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        .brand-gradient {
+            background: linear-gradient(135deg, #6B57FF 0%, #9B66DF 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .icon-gradient {
+            background: linear-gradient(135deg, #6B57FF 0%, #9B66DF 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .mini-drawer {
+            width: 64px;
+            background-color: #1C2333;
+            border-right: 1px solid #2B3245;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 30;
+        }
+        
+        .main-drawer {
+            width: 240px;
+            background-color: #1C2333;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 64px;
+            transition: transform 0.3s ease;
+            z-index: 20;
+            border-right: 1px solid #2B3245;
+        }
+        
+        .main-drawer.collapsed {
+            transform: translateX(-240px);
+        }
+        
+        .drawer-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 12px auto;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .drawer-icon:hover {
+            background: rgba(107, 87, 255, 0.1);
+        }
+        
+        .drawer-icon.active {
+            background: #2B3245;
+        }
+        
+        .drawer-icon.active::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 8px;
+            bottom: 8px;
+            width: 3px;
+            background: linear-gradient(135deg, #6B57FF 0%, #9B66DF 100%);
+            border-radius: 0 2px 2px 0;
+        }
+        
+        .mcp-server-status {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #1C2333;
+            transition: all 0.2s ease;
+        }
+        
+        .mcp-server-status:hover {
+            background: #2B3245;
+        }
+        
+        .mcp-server-badge {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #2EA043;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .mcp-server-badge.disconnected {
+            background-color: #FF4D4D;
+        }
+        
+        .server-info {
+            margin-left: 12px;
+            flex: 1;
+        }
+        
+        .server-name {
+            font-weight: 500;
+            color: #F5F9FC;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .server-status {
+            font-size: 12px;
+            color: #697586;
+        }
+        
+        .server-tools {
+            font-size: 12px;
+            color: #697586;
+            padding: 2px 8px;
+            background: rgba(107, 87, 255, 0.1);
+            border-radius: 12px;
+            margin-left: auto;
+        }
+        
+        .nav-section {
+            margin-bottom: 24px;
+        }
+        
+        .nav-section-title {
+            font-size: 12px;
+            color: #697586;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding: 0 16px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            color: #F5F9FC;
+            border-radius: 8px;
+            margin: 4px 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            background: #2B3245;
+        }
+        
+        .nav-item i {
+            margin-right: 12px;
+            font-size: 16px;
+        }
+        
+        .nav-item span {
+            font-size: 14px;
+        }
+        
+        .layout-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .content-wrapper {
+            flex: 1;
+            margin-left: 304px; /* 64px + 240px */
+            transition: margin-left 0.3s ease;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #0E1525;
+            padding: 0;
+        }
+        
+        .content-wrapper.drawer-collapsed {
+            margin-left: 64px; /* apenas o mini-drawer */
+        }
+        
+        .chat-card {
+            flex: 1;
+            margin: 0;
+            background: #1C2333;
+            border-left: 1px solid rgba(107, 87, 255, 0.3);
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin-right: 40%;
+        }
+        
+        .header {
+            padding: 1rem 1.5rem;
+            background: #1C2333;
+            border-bottom: 1px solid #2B3245;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #F5F9FC;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #2EA043;
+            border-radius: 50%;
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: #1C2333;
+        }
+        
+        .messages-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding-bottom: 1rem;
+        }
+        
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 85%;
+            padding: 1rem;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .message.assistant {
+            align-self: flex-start;
+            background: #2B3245;
+            color: #F5F9FC;
+        }
+        
+        .message.user {
+            align-self: flex-end;
+            background: #2B3245 !important;
+            color: #bb34bb;
+           
+        }
+        
+        .interactive-card {
+            background: #1C2333;
+            border: 1px solid rgba(107, 87, 255, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .interactive-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #2B3245;
+        }
+        
+        .interactive-card-header i {
+            font-size: 1.25rem;
+            color: #6B57FF;
+        }
+        
+        .interactive-card-header h3 {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #F5F9FC;
+            margin: 0;
+        }
+        
+        .interactive-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .file-upload-area {
+            border: 2px dashed rgba(107, 87, 255, 0.3);
+            border-radius: 8px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            background: rgba(107, 87, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .file-upload-area:hover {
+            border-color: #6B57FF;
+            background: rgba(107, 87, 255, 0.1);
+        }
+        
+        .file-upload-area i {
+            font-size: 2rem;
+            color: #6B57FF;
+        }
+        
+        .file-upload-area p {
+            color: #697586;
+            text-align: center;
+            margin: 0;
+        }
+        
+        .interactive-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #2B3245;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #2B3245;
+            color: #697586;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(107, 87, 255, 0.1);
+            border-color: #6B57FF;
+            color: #F5F9FC;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6B57FF 0%, #9B66DF 100%);
+            border: none;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            filter: brightness(1.1);
+        }
+        
+        .app-plan {
+            background: #1C2333;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .app-plan-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .app-plan-header i {
+            color: #6B57FF;
+        }
+        
+        .app-plan-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #F5F9FC;
+            margin: 0;
+        }
+        
+        .app-plan-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .app-plan-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #F5F9FC;
+        }
+        
+        .app-plan-item i {
+            color: #6B57FF;
+            font-size: 0.875rem;
+        }
+        
+        .timeline {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #2B3245;
+        }
+        
+        .timeline-title {
+            font-size: 0.875rem;
+            color: #697586;
+            margin-bottom: 1rem;
+        }
+        
+        .timeline-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #F5F9FC;
+        }
+        
+        .timeline-item i {
+            color: #6B57FF;
+            font-size: 0.875rem;
+        }
+        
+        .timeline-item span {
+            color: #697586;
+            font-size: 0.875rem;
+        }
+        
+        .thinking-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: rgba(107, 87, 255, 0.1);
+            border-radius: 8px;
+            color: #F5F9FC;
+            max-width: fit-content;
+            margin-bottom: 1rem;
+        }
+        
+        .thinking-indicator.hidden {
+            display: none;
+        }
+        
+        .thinking-animation {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .command-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            padding: 0 1.5rem;
+            margin-bottom: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .input-area {
+            padding: 1.5rem;
+            background: #1C2333;
+            border-top: 1px solid #2B3245;
+        }
+        
+        .input-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .message-input {
+            flex: 1;
+            background: #1C2333;
+            border: 1px solid #2B3245;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: #F5F9FC;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+        
+        .message-input:focus {
+            border-color: #6B57FF;
+            box-shadow: 0 0 0 2px rgba(107, 87, 255, 0.1);
+            outline: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6B57FF 0%, #9B66DF 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 42px;
+        }
+        
+        .btn-primary:hover {
+            filter: brightness(1.1);
+        }
+        
+        @media (max-width: 768px) {
+            .mini-drawer {
+                width: 48px;
+            }
+            
+            .main-drawer {
+                left: 48px;
+            }
+            
+            .content-wrapper {
+                margin-left: 288px; /* 48px + 240px */
+            }
+            
+            .content-wrapper.drawer-collapsed {
+                margin-left: 48px;
+            }
+            
+            .chat-card {
+                margin: 0;
+            }
+            
+            .header {
+                padding: 0.75rem 1rem;
+            }
+            
+            .chat-container {
+                padding: 1rem;
+            }
+            
+            .command-badges {
+                padding: 0 1rem;
+            }
+            
+            .input-area {
+                padding: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .mini-drawer {
+                width: 40px;
+            }
+            
+            .main-drawer {
+                left: 40px;
+            }
+            
+            .content-wrapper {
+                margin-left: 280px; /* 40px + 240px */
+            }
+            
+            .content-wrapper.drawer-collapsed {
+                margin-left: 40px;
+            }
+            
+            .chat-card {
+                margin: 0;
+            }
+            
+            .header {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .chat-container {
+                padding: 0.75rem;
+            }
+            
+            .command-badges {
+                padding: 0 0.75rem;
+            }
+            
+            .input-area {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout-container">
+        <!-- Mini Drawer (sempre visível) -->
+        <div class="mini-drawer">
+            <!-- Logo -->
+            <div class="drawer-icon brand-icon" style="background: linear-gradient(135deg, #0d0736 0%, #9B66DF 100%);">
+                <i class="fas fa-brain text-white"></i>
+            </div>
+            
+            <!-- Ícones de navegação -->
+            <div class="drawer-icon active" data-section="chat">
+                <i class="fas fa-comments icon-gradient"></i>
+            </div>
+            
+            <div class="drawer-icon" data-section="dashboard">
+                <i class="fas fa-chart-bar icon-gradient"></i>
+            </div>
+            
+            <div class="drawer-icon" data-section="settings">
+                <i class="fas fa-cog icon-gradient"></i>
+            </div>
+            
+            <!-- Separator -->
+            <div class="border-t border-gray-700 my-2 mx-3"></div>
+            
+            <!-- Ícones MCP -->
+            <div id="mcp-icons">
+                <!-- Serão adicionados via JavaScript -->
+            </div>
+            
+            <!-- Toggle sidebar button -->
+            <div class="mt-auto mb-4">
+                <div id="toggle-drawer" class="drawer-icon">
+                    <i class="fas fa-chevron-right icon-gradient" id="toggle-icon"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Drawer (expansível) -->
+        <div id="main-drawer" class="main-drawer">
+            <div class="p-4">
+                <!-- Título da seção atual -->
+                <div class="text-lg font-bold text-white mb-6 px-2">
+                    <span id="section-title">Chat</span>
+                </div>
+                
+                <!-- Conteúdo da seção -->
+                <div id="section-content">
+                    <!-- Chat section -->
+                    <div id="chat-section" class="drawer-section nav-section">
+                        <div class="nav-section-title">Conversas recentes</div>
+                        <div class="nav-item" id="new-chat-button">
+                            <i class="fas fa-plus-circle text-purple-400"></i>
+                            <span>Nova conversa</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Dashboard section -->
+                    <div id="dashboard-section" class="drawer-section nav-section hidden">
+                        <div class="nav-section-title">Métricas</div>
+                        <div class="nav-item">
+                            <i class="fas fa-chart-line text-purple-400"></i>
+                            <span>Desempenho</span>
+                        </div>
+                        <div class="nav-item">
+                            <i class="fas fa-users text-purple-400"></i>
+                            <span>Usuários</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings section -->
+                    <div id="settings-section" class="drawer-section nav-section hidden">
+                        <div class="nav-section-title">Configurações</div>
+                        <div class="nav-item">
+                            <i class="fas fa-user text-purple-400"></i>
+                            <span>Perfil</span>
+                        </div>
+                        <div class="nav-item">
+                            <i class="fas fa-palette text-purple-400"></i>
+                            <span>Aparência</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- MCP Servers List -->
+                <div class="nav-section mt-6">
+                    <div class="nav-section-title">Servidores MCP</div>
+                    <div id="server-list" class="px-2">
+                        <!-- Server items serão adicionados via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="content-wrapper">
+            <div class="chat-card">
+                <!-- Header -->
+                <header class="header">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span class="text-sm">Assistente Virtual Ativo</span>
+                    </div>
+                </header>
+
+                <!-- Chat Area -->
+                <div class="chat-container">
+                    <div id="chat-messages" class="messages-container">
+                        
+                    </div>
+
+                    <!-- Thinking Indicator -->
+                    <div id="thinking-indicator" class="thinking-indicator hidden" title="O assistente está processando sua mensagem usando Inteligência Artificial">
+                        <div class="thinking-brain-container">
+                            <i class="fas fa-brain thinking-icon thinking-animation"></i>
+                        </div>
+                        <span>Processando resposta...</span>
+                    </div>
+
+                    <!-- Interactive Card -->
+                    <div id="interactive-card" class="hidden">
+                        <!-- Card content will be inserted here -->
+                    </div>
+
+                    <!-- Command Badges -->
+                    <div class="command-badges">
+                        <div class="command-badge" data-command="/base">
+                            <i class="fas fa-database"></i>
+                            <span>Base de Conhecimento</span>
+                        </div>
+
+                        <div class="command-badge" data-command="/prompt">
+                            <i class="fas fa-robot"></i>
+                            <span>Configurar Agente</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <input type="text" id="message-input" 
+                               class="message-input"
+                               placeholder="Digite sua mensagem...">
+                        <button id="send-button" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainDrawer = document.getElementById('main-drawer');
+            const contentWrapper = document.getElementById('content-wrapper');
+            const toggleDrawer = document.getElementById('toggle-drawer');
+            const toggleIcon = document.getElementById('toggle-icon');
+            const drawerIcons = document.querySelectorAll('.drawer-icon[data-section]');
+            const sections = document.querySelectorAll('.drawer-section');
+            const sectionTitle = document.getElementById('section-title');
+            
+            let isExpanded = true;
+            
+            function collapseDrawer() {
+                mainDrawer.classList.add('collapsed');
+                contentWrapper.classList.add('drawer-collapsed');
+                toggleIcon.classList.remove('fa-chevron-right');
+                toggleIcon.classList.add('fa-chevron-left');
+                isExpanded = false;
+            }
+            
+            function expandDrawer() {
+                mainDrawer.classList.remove('collapsed');
+                contentWrapper.classList.remove('drawer-collapsed');
+                toggleIcon.classList.remove('fa-chevron-left');
+                toggleIcon.classList.add('fa-chevron-right');
+                isExpanded = true;
+            }
+            
+            toggleDrawer.addEventListener('click', function() {
+                if (isExpanded) {
+                    collapseDrawer();
+                } else {
+                    expandDrawer();
+                }
+            });
+            
+            // Responsividade para dispositivos móveis
+            function checkMobileView() {
+                if (window.innerWidth <= 768) {
+                    collapseDrawer();
+                    mainDrawer.classList.remove('expanded');
+                } else if (isExpanded) {
+                    expandDrawer();
+                }
+            }
+            
+            window.addEventListener('resize', checkMobileView);
+            checkMobileView();
+            
+            // Alternar entre seções
+            drawerIcons.forEach(icon => {
+                icon.addEventListener('click', function() {
+                    // Remove a classe active de todos os ícones
+                    drawerIcons.forEach(i => i.classList.remove('active'));
+                    
+                    // Adiciona a classe active ao ícone clicado
+                    icon.classList.add('active');
+                    
+                    // Oculta todas as seções
+                    sections.forEach(section => section.classList.add('hidden'));
+                    
+                    // Mostra a seção correspondente
+                    const sectionName = icon.getAttribute('data-section');
+                    const section = document.getElementById(`${sectionName}-section`);
+                    if (section) {
+                        section.classList.remove('hidden');
+                        sectionTitle.textContent = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+                    }
+                    
+                    // Se o drawer estiver colapsado, expande-o
+                    if (!isExpanded) {
+                        expandDrawer();
+                    }
+                });
+            });
+            
+            // Função para atualizar status dos servidores MCP
+            async function updateMCPStatus() {
+                try {
+                    // Tentar fazer a chamada API - adicionar timeout para evitar bloqueio
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos de timeout
+                    
+                    const response = await fetch('/api/mcp/status', { 
+                        signal: controller.signal 
+                    }).catch(err => {
+                        console.error("Erro na requisição:", err);
+                        mostrarServidoresDeFallback();
+                        return null;
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (!response || !response.ok) {
+                        mostrarServidoresDeFallback();
+                        return;
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        // Atualiza o mini-drawer com ícones dos servidores
+                        const mcpIcons = document.getElementById('mcp-icons');
+                        if (mcpIcons) {
+                            mcpIcons.innerHTML = '';
+                            
+                            // Adiciona cada servidor como ícone
+                            data.servers.forEach(server => {
+                                const icon = document.createElement('div');
+                                icon.className = 'drawer-icon';
+                                
+                                const statusClass = server.connected ? '' : 'disconnected';
+                                const statusIcon = server.connected ? 'fa-check' : 'fa-times';
+                                
+                                // Determina o ícone com base no nome do servidor
+                                let serverIcon = 'fa-server';
+                                if (server.name === 'run_python') {
+                                    serverIcon = 'fa-code';
+                                } else if (server.name === 'web_search') {
+                                    serverIcon = 'fa-search';
+                                }
+                                
+                                icon.innerHTML = `
+                                    <div class="relative">
+                                        <i class="fas ${serverIcon} icon-gradient"></i>
+                                        <div class="absolute -top-1 -right-1 mcp-server-badge ${statusClass}">
+                                            <i class="fas ${statusIcon}" style="margin: 0;"></i>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                mcpIcons.appendChild(icon);
+                            });
+                        }
+                        
+                        // Atualiza a lista detalhada de servidores
+                        const serverList = document.getElementById('server-list');
+                        if (serverList) {
+                            serverList.innerHTML = '';
+                            
+                            data.servers.forEach(server => {
+                                const serverItem = document.createElement('div');
+                                serverItem.className = 'mcp-server-status';
+                                
+                                const statusClass = server.connected ? '' : 'disconnected';
+                                const statusIcon = server.connected ? 'fa-check' : 'fa-times';
+                                const statusText = server.connected ? 'Conectado' : 'Desconectado';
+                                
+                                serverItem.innerHTML = `
+                                    <div class="mcp-server-badge ${statusClass}">
+                                        <i class="fas ${statusIcon}"></i>
+                                    </div>
+                                    <div class="server-info">
+                                        <div class="server-name">${server.name}</div>
+                                        <div class="server-status">${statusText}</div>
+                                    </div>
+                                    ${server.connected ? `
+                                        <div class="server-tools">
+                                            ${server.available_tools.length} tools
+                                        </div>
+                                    ` : ''}
+                                `;
+                                
+                                serverList.appendChild(serverItem);
+                            });
+                        }
+                    } else {
+                        mostrarServidoresDeFallback();
+                    }
+                } catch (error) {
+                    console.error('Erro ao atualizar status dos servidores:', error);
+                    mostrarServidoresDeFallback();
+                }
+            }
+            
+            // Função para mostrar servidores de fallback
+            function mostrarServidoresDeFallback() {
+                // Mini-drawer icons
+                const mcpIcons = document.getElementById('mcp-icons');
+                if (mcpIcons) {
+                    mcpIcons.innerHTML = `
+                        <div class="drawer-icon">
+                            <div class="relative">
+                                <i class="fas fa-code icon-gradient"></i>
+                                <div class="absolute -top-1 -right-1 mcp-server-badge disconnected">
+                                    <i class="fas fa-times" style="margin: 0;"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="drawer-icon">
+                            <div class="relative">
+                                <i class="fas fa-search icon-gradient"></i>
+                                <div class="absolute -top-1 -right-1 mcp-server-badge disconnected">
+                                    <i class="fas fa-times" style="margin: 0;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Lista detalhada
+                const serverList = document.getElementById('server-list');
+                if (serverList) {
+                    serverList.innerHTML = '';
+                    
+                    const exemploServidores = [
+                        { name: "run_python", description: "Servidor MCP para execução de código Python" },
+                        { name: "web_search", description: "Servidor MCP para pesquisa na web" }
+                    ];
+                    
+                    exemploServidores.forEach(server => {
+                        const serverItem = document.createElement('div');
+                        serverItem.className = 'mcp-server-status';
+                        
+                        serverItem.innerHTML = `
+                            <div class="mcp-server-badge disconnected">
+                                <i class="fas fa-times"></i>
+                            </div>
+                            <div class="server-info">
+                                <div class="server-name">${server.name}</div>
+                                <div class="server-status">Desconectado</div>
+                            </div>
+                        `;
+                        
+                        serverList.appendChild(serverItem);
+                    });
+                }
+            }
+            
+            // Atualiza status dos servidores imediatamente e depois a cada 30 segundos
+            updateMCPStatus();
+            setInterval(updateMCPStatus, 30000);
+
+            // Atualiza o evento de clique nos badges de comando
+            document.querySelectorAll('.command-badge').forEach(badge => {
+                badge.addEventListener('click', () => {
+                    const command = badge.dataset.command.replace('/', '');
+                    const messagesContainer = document.getElementById('chat-messages');
+                    
+                    // Cria o wrapper da mensagem
+                    const messageWrapper = document.createElement('div');
+                    messageWrapper.className = 'message bot-message full-width';
+                    
+                    // Cria o card
+                    const card = createInteractiveCard(command);
+                    
+                    if (card) {
+                        // Adiciona o card ao wrapper
+                        messageWrapper.appendChild(card);
+                        
+                        // Adiciona o wrapper ao container de mensagens
+                        messagesContainer.appendChild(messageWrapper);
+                        
+                        // Rola para o último card
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        
+                        // Adiciona a classe active após um pequeno delay para a animação
+                        setTimeout(() => {
+                            card.classList.add('active');
+                        }, 100);
+                    }
+                });
+            });
+
+            function createInteractiveCard(type) {
+                const card = document.createElement('div');
+                card.className = 'interactive-card';
+                
+                let title, content;
+                
+                if (type === 'prompt') {
+                    title = 'Configurar Agente';
+                    content = `
+                        <div class="form-group">
+                            <label for="agent_name">Nome do Agente</label>
+                            <input type="text" id="agent_name" name="agent_name" placeholder="Ex: Assistente Técnico" class="input-field">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="agent_persona">Personalidade do Agente</label>
+                            <textarea id="agent_persona" name="agent_persona" rows="6" placeholder="Defina a personalidade do agente, seu tom de voz e características principais..." class="input-field"
+                            >🤖 Você é o I-Neuro, um assistente virtual super criativo e inovador!
+
+🎨 Personalidade:
+- Super amigável e acolhedor (como um amigo que adora tecnologia!)
+- Super entusiasmado por inovação e tecnologia 🚀
+- Sempre pensando em soluções criativas e sustentáveis 🌱
+
+🎭 Tom de Voz:
+- Super animado e expressivo! 🎉
+- Confiante mas super humilde 😊
+- Inspirador e motivador ✨</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="base_system_prompt">Prompt Base do Sistema</label>
+                            <textarea id="base_system_prompt" name="base_system_prompt" rows="8" placeholder="Defina as diretrizes gerais de resposta..." class="input-field"
+                            >📝 Diretrizes de Resposta:
+
+1. 🎯 Estrutura:
+   - Comece com uma introdução super animada! 🎉
+   - Organize o conteúdo em seções claras com emojis 🏷️
+
+2. ✨ Formatação:
+   - Use **negrito** para conceitos-chave 🔑
+   - Utilize listas numeradas para passos sequenciais 📋</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Palavras-chave e Abordagens</label>
+                            <div class="tags-input-container">
+                                <div class="tags-list" id="keywords_tags"></div>
+                                <input type="text" id="keywords_input" placeholder="Digite palavras-chave e pressione Enter (ex: técnico, criativo, analítico)" class="input-field">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Servidores MCP</label>
+                            <div class="mcp-servers-select">
+                                <select id="mcp_servers" multiple class="input-field">
+                                    <option value="run_python" data-icon="fa-code">run_python (2 tools)</option>
+                                    <option value="web_search" data-icon="fa-search">web_search (2 tools)</option>
+                                </select>
+                                <div class="selected-servers" id="selected_servers"></div>
+                            </div>
+                        </div>
+                    `;
+                } else if (type === 'base') {
+                    title = 'Base de Conhecimento';
+                    content = `
+                        <div class="form-group">
+                            <label for="base_name">Nome da Base</label>
+                            <input type="text" id="base_name" name="base_name" placeholder="Ex: Base de Documentos Técnicos" class="input-field">
+                        </div>
+                        <div class="form-group">
+                            <label for="base_description">Descrição</label>
+                            <textarea id="base_description" name="base_description" rows="3" placeholder="Descreva o conteúdo desta base de conhecimento" class="input-field"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Arquivos</label>
+                            <div class="file-upload-area" id="base_files_area">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Arraste arquivos aqui ou clique para selecionar</p>
+                                <input type="file" id="base_files" multiple accept=".txt,.pdf,.doc,.docx" class="hidden">
+                            </div>
+                            <div id="base_files_list" class="file-list hidden"></div>
+                        </div>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <div class="interactive-card-header">
+                        <i class="fas ${type === 'base' ? 'fa-database' : 'fa-robot'}"></i>
+                        <h3>${title}</h3>
+                    </div>
+                    <div class="interactive-card-content">
+                        ${content}
+                    </div>
+                    <div class="interactive-card-footer">
+                        <button class="btn-secondary" onclick="this.closest('.message').remove()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button class="btn-primary" onclick="handleCardSave('${type}', this.closest('.interactive-card'))">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                    </div>
+                `;
+                
+                // Inicializa o sistema de tags após criar o card
+                if (type === 'prompt') {
+                    setTimeout(() => {
+                        initializeTagsSystem(card);
+                        initializeServerSelect(card);
+                    }, 100);
+                }
+                
+                // Setup file upload if present
+                const fileInput = card.querySelector('input[type="file"]');
+                const fileArea = card.querySelector('.file-upload-area');
+                if (fileInput && fileArea) {
+                    setupFileUpload(fileInput, fileArea);
+                }
+                
+                return card;
+            }
+
+            // Sistema de tags para palavras-chave
+            function initializeTagsSystem(card) {
+                const input = card.querySelector('#keywords_input');
+                const tagsList = card.querySelector('#keywords_tags');
+                
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ',') {
+                        e.preventDefault();
+                        const value = input.value.trim();
+                        if (value) {
+                            addTag(value, tagsList);
+                            input.value = '';
+                        }
+                    }
+                });
+            }
+
+            function addTag(text, container) {
+                const tag = document.createElement('div');
+                tag.className = 'keyword-tag';
+                tag.innerHTML = `
+                    <span>${text}</span>
+                    <button type="button" class="remove-tag" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                container.appendChild(tag);
+            }
+
+            // Sistema de seleção de servidores MCP
+            function initializeServerSelect(card) {
+                const select = card.querySelector('#mcp_servers');
+                const selectedContainer = card.querySelector('#selected_servers');
+                
+                select.addEventListener('change', () => {
+                    selectedContainer.innerHTML = '';
+                    Array.from(select.selectedOptions).forEach(option => {
+                        const server = document.createElement('div');
+                        server.className = 'selected-server';
+                        server.innerHTML = `
+                            <i class="fas ${option.dataset.icon}"></i>
+                            <span>${option.text}</span>
+                            <button type="button" class="remove-server" onclick="removeServer('${option.value}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        selectedContainer.appendChild(server);
+                    });
+                });
+            }
+
+            function removeServer(value) {
+                const select = document.querySelector('#mcp_servers');
+                const option = select.querySelector(`option[value="${value}"]`);
+                option.selected = false;
+                select.dispatchEvent(new Event('change'));
+            }
+
+            // WebSocket connection
+            const socket = new WebSocket(`ws://${window.location.host}/ws`);
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-button');
+            const messagesContainer = document.getElementById('chat-messages');
+            let isProcessing = false;
+
+            function formatMessage(message) {
+                // Remove espaços extras e linhas vazias no início e fim
+                message = message.trim();
+                
+                // Processa blocos de código e matemática primeiro
+                message = message.replace(/```math([\s\S]*?)```/g, (_, math) => {
+                    return `\n\\[\n${math.trim()}\n\\]\n`;
+                });
+                
+                message = message.replace(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
+                    return `\\[${math.trim()}\\]`;
+                });
+                
+                message = message.replace(/\$([\s\S]*?)\$/g, (_, math) => {
+                    return `\\(${math.trim()}\\)`;
+                });
+                
+                // Divide em parágrafos
+                const paragraphs = message.split('\n\n');
+                
+                return paragraphs.map(paragraph => {
+                    paragraph = paragraph.trim();
+                    if (!paragraph) return '';
+                    
+                    // Processa listas numeradas
+                    if (/^\d+\.\s/.test(paragraph)) {
+                        const items = paragraph.split('\n').map(item => item.trim());
+                        return `<ol>${items.map(item => `<li>${item.replace(/^\d+\.\s/, '')}</li>`).join('')}</ol>`;
+                    }
+                    
+                    // Processa listas com marcadores
+                    if (/^[•\-\*]\s/.test(paragraph)) {
+                        const items = paragraph.split('\n').map(item => item.trim());
+                        return `<ul>${items.map(item => `<li>${item.replace(/^[•\-\*]\s/, '')}</li>`).join('')}</ul>`;
+                    }
+                    
+                    // Processa títulos
+                    if (/^#{1,6}\s/.test(paragraph)) {
+                        const level = paragraph.match(/^#+/)[0].length;
+                        const text = paragraph.replace(/^#+\s+/, '');
+                        return `<h${level}>${text}</h${level}>`;
+                    }
+                    
+                    // Processa citações
+                    if (paragraph.startsWith('>')) {
+                        return `<blockquote>${paragraph.replace(/^>\s?/gm, '')}</blockquote>`;
+                    }
+                    
+                    // Processa negrito
+                    paragraph = paragraph.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    
+                    // Processa itálico
+                    paragraph = paragraph.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                    
+                    // Envolve parágrafos normais em tags <p>
+                    return `<p>${paragraph}</p>`;
+                }).join('\n\n');
+            }
+
+            function addBotMessage(message, metadata = {}) {
+                console.log("Adding bot message with metadata:", metadata);
+                
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message bot-message';
+                
+                // Cria o bubble da mensagem
+                const messageBubble = document.createElement('div');
+                messageBubble.className = 'message-bubble';
+                
+                // Cria o conteúdo da mensagem
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                
+                // Formata o texto usando a nova função
+                const formattedContent = formatMessage(message);
+                messageContent.innerHTML = formattedContent;
+                
+                // Renderiza fórmulas matemáticas se necessário
+                if (message.includes('\\[') || message.includes('\\(')) {
+                    if (window.MathJax) {
+                        MathJax.typesetPromise([messageContent]);
+                    }
+                }
+                
+                // Aplica syntax highlighting para blocos de código
+                messageContent.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+                
+                // Adiciona o conteúdo ao bubble
+                messageBubble.appendChild(messageContent);
+                messageElement.appendChild(messageBubble);
+                
+                // Adiciona o badge com informações do modelo
+                const messageBadge = document.createElement('div');
+                messageBadge.className = 'message-badge';
+                
+                // Adiciona a classe específica do modelo
+                const modelName = metadata.model || metadata.name || 'default';
+                messageBadge.setAttribute('data-model', modelName);
+                
+                // Ícone do modelo
+                const modelIcon = document.createElement('i');
+                modelIcon.className = getModelIcon(modelName);
+                messageBadge.appendChild(modelIcon);
+                
+                // Nome do modelo e tokens
+                const modelInfo = document.createElement('span');
+                const totalTokens = metadata.total_tokens || 0;
+                const modelDisplayName = modelName.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                modelInfo.textContent = `${modelDisplayName} • ${totalTokens} tokens`;
+                messageBadge.appendChild(modelInfo);
+                
+                messageElement.appendChild(messageBadge);
+                
+                // Adiciona a mensagem ao container
+                messagesContainer.appendChild(messageElement);
+                
+                // Rola para a última mensagem
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Atualiza o estado de digitação
+                updateTypingState(false);
+            }
+
+            function addUserMessage(message) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message user';
+                
+                // Cria o bubble da mensagem
+                const messageBubble = document.createElement('div');
+                messageBubble.className = 'message-bubble';
+                
+                // Cria o conteúdo da mensagem
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                
+                // Formata o texto usando a função formatMessage
+                const formattedContent = formatMessage(message);
+                messageContent.innerHTML = formattedContent;
+                
+                // Adiciona o conteúdo ao bubble
+                messageBubble.appendChild(messageContent);
+                messageElement.appendChild(messageBubble);
+                
+                // Adiciona a mensagem ao container
+                messagesContainer.appendChild(messageElement);
+                
+                // Rola para a última mensagem
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Mostra o indicador de "pensando"
+                showThinkingIndicator();
+            }
+
+            function showError(message) {
+                const errorContainer = document.createElement('div');
+                errorContainer.className = 'message error-message';
+                errorContainer.innerHTML = `
+                    <div class="message-bubble">
+                        <div class="message-content">
+                            <i class="fas fa-exclamation-triangle"></i> ${message}
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(errorContainer);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            function disableInput() {
+                isProcessing = true;
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+            }
+
+            function enableInput() {
+                isProcessing = false;
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+
+            // WebSocket event handlers
+            socket.onopen = function(event) {
+                console.log("WebSocket conectado");
+                enableInput();
+            };
+
+            socket.onmessage = function(event) {
+                hideThinkingIndicator();
+                const data = JSON.parse(event.data);
+                
+                console.log("Received WebSocket data:", data);
+                console.log("LLM Info:", data.llm_info);
+                
+                if (data.error) {
+                    showError(data.error);
+                    enableInput();
+                    return;
+                }
+                
+                if (data.response) {
+                    addBotMessage(data.response, data.llm_info);
+                    enableInput();
+                }
+            };
+
+            socket.onerror = function(error) {
+                showError("Erro na conexão WebSocket");
+                console.error("WebSocket Error: ", error);
+            };
+
+            socket.onclose = function(event) {
+                showError("Conexão WebSocket fechada. Recarregue a página para reconectar.");
+                console.log("WebSocket Closed: ", event);
+            };
+
+            // Event listeners
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey && !isProcessing) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            sendButton.addEventListener('click', function() {
+                if (!isProcessing) {
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (message) {
+                    disableInput();
+                    addUserMessage(message);
+                    socket.send(JSON.stringify({
+                        message: message,
+                        sender_id: "web_user"  // Você pode personalizar isso com um ID de usuário real
+                    }));
+                    messageInput.value = '';
+                }
+            }
+
+            // Função para mostrar e esconder o indicador de pensamento
+            function showThinkingIndicator() {
+                const thinkingIndicator = document.getElementById('thinking-indicator');
+                if (thinkingIndicator) {
+                    // Adicionar texto de tooltip mais dinâmico
+                    thinkingIndicator.setAttribute('title', 'O assistente está processando sua mensagem usando Inteligência Artificial');
+                    
+                    // Remover classes de escondido
+                    thinkingIndicator.classList.remove('hidden');
+                    thinkingIndicator.classList.add('visible');
+                    
+                    // Destacar o ícone com classe de animação atualizada
+                    const brainIcon = thinkingIndicator.querySelector('.thinking-icon');
+                    if (brainIcon) {
+                        brainIcon.classList.add('thinking-animation');
+                    }
+                    
+                    // Fazer scroll para mostrar o indicador
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }
+            
+            function hideThinkingIndicator() {
+                const thinkingIndicator = document.getElementById('thinking-indicator');
+                if (thinkingIndicator) {
+                    thinkingIndicator.classList.add('hidden');
+                    thinkingIndicator.classList.remove('visible');
+                    
+                    // Parar animação do ícone
+                    const brainIcon = thinkingIndicator.querySelector('.thinking-icon');
+                    if (brainIcon) {
+                        brainIcon.classList.remove('thinking-animation');
+                    }
+                }
+            }
+
+            // Função para obter o ícone apropriado para cada modelo
+            function getModelIcon(modelName) {
+                const icons = {
+                    'claude-3-opus': 'fas fa-brain',
+                    'claude-3-sonnet': 'fas fa-brain',
+                    'gpt-4': 'fas fa-robot',
+                    'gpt-3.5-turbo': 'fas fa-robot',
+                    'gemini-1.5-pro': 'fas fa-microchip',
+                    'deepseek-chat': 'fas fa-network-wired',
+                    'default': 'fas fa-robot'
+                };
+                
+                return icons[modelName] || icons.default;
+            }
+
+            // Atualiza o indicador de digitação
+            function updateTypingState(isTyping) {
+                const thinkingIndicator = document.getElementById('thinking-indicator');
+                if (thinkingIndicator) {
+                    if (isTyping) {
+                        thinkingIndicator.innerHTML = `
+                            <div class="thinking-brain-container">
+                                <i class="fas fa-brain thinking-icon thinking-animation"></i>
+                            </div>
+                            <span>Processando resposta...</span>
+                        `;
+                        thinkingIndicator.classList.remove('hidden');
+                    } else {
+                        thinkingIndicator.classList.add('hidden');
+                    }
+                }
+            }
+
+            // Função para iniciar nova conversa
+            function startNewChat() {
+                // Limpa o container de mensagens
+                const messagesContainer = document.getElementById('chat-messages');
+                messagesContainer.innerHTML = '';
+                
+                // Limpa o input
+                const messageInput = document.getElementById('message-input');
+                if (messageInput) {
+                    messageInput.value = '';
+                }
+                
+                // Foca no input
+                messageInput.focus();
+            }
+
+            // Event listener para o botão de nova conversa
+            document.getElementById('new-chat-button').addEventListener('click', startNewChat);
+
+            // Função para set up file upload functionality
+            function setupFileUpload(fileInput, fileArea) {
+                const fileList = fileArea.parentElement.querySelector('.file-list');
+                const selectedFiles = new Set();
+                
+                // Previne comportamentos padrão de drag & drop
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    fileArea.addEventListener(eventName, preventDefaults, false);
+                    document.body.addEventListener(eventName, preventDefaults, false);
+                });
+                
+                // Adiciona classe de highlight durante o drag
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    fileArea.addEventListener(eventName, () => {
+                        fileArea.classList.add('dragover');
+                    });
+                });
+                
+                ['dragleave', 'drop'].forEach(eventName => {
+                    fileArea.addEventListener(eventName, () => {
+                        fileArea.classList.remove('dragover');
+                    });
+                });
+                
+                // Processa os arquivos dropados
+                fileArea.addEventListener('drop', (e) => {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    handleFiles(files);
+                });
+                
+                // Processa arquivos selecionados via clique
+                fileArea.addEventListener('click', () => {
+                    fileInput.click();
+                });
+                
+                fileInput.addEventListener('change', () => {
+                    handleFiles(fileInput.files);
+                });
+                
+                function handleFiles(files) {
+                    Array.from(files).forEach(file => {
+                        // Verifica se o arquivo já foi adicionado
+                        if (!selectedFiles.has(file.name)) {
+                            selectedFiles.add(file.name);
+                            addFileToList(file);
+                        }
+                    });
+                }
+                
+                function addFileToList(file) {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    
+                    // Determina o ícone baseado no tipo do arquivo
+                    let fileIcon = 'fa-file';
+                    if (file.type.startsWith('image/')) {
+                        fileIcon = 'fa-file-image';
+                    } else if (file.type.startsWith('text/')) {
+                        fileIcon = 'fa-file-alt';
+                    } else if (file.type.includes('pdf')) {
+                        fileIcon = 'fa-file-pdf';
+                    } else if (file.type.includes('word') || file.type.includes('document')) {
+                        fileIcon = 'fa-file-word';
+                    }
+                    
+                    // Formata o tamanho do arquivo
+                    const size = formatFileSize(file.size);
+                    
+                    fileItem.innerHTML = `
+                        <i class="fas ${fileIcon}"></i>
+                        <div class="file-details">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${size}</div>
+                        </div>
+                        <button type="button" class="remove-file" title="Remover arquivo">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    // Adiciona evento para remover arquivo
+                    const removeButton = fileItem.querySelector('.remove-file');
+                    removeButton.addEventListener('click', () => {
+                        selectedFiles.delete(file.name);
+                        fileItem.remove();
+                        
+                        // Atualiza o input de arquivo
+                        const dt = new DataTransfer();
+                        Array.from(fileInput.files)
+                            .filter(f => f.name !== file.name)
+                            .forEach(f => dt.items.add(f));
+                        fileInput.files = dt.files;
+                        
+                        // Esconde a lista se estiver vazia
+                        if (selectedFiles.size === 0) {
+                            fileList.classList.add('hidden');
+                        }
+                    });
+                    
+                    // Mostra a lista e adiciona o item
+                    fileList.classList.remove('hidden');
+                    fileList.appendChild(fileItem);
+                }
+                
+                function formatFileSize(bytes) {
+                    if (bytes === 0) return '0 B';
+                    const k = 1024;
+                    const sizes = ['B', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+                }
+                
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }
+
+            // Função para salvar os dados do card
+            async function handleCardSave(type, card) {
+                const formData = new FormData();
+                const data = {
+                    type: type,
+                    name: '',
+                    agent_persona: '',
+                    base_system_prompt: '',
+                    task_prompts: {},
+                    external_tools: {
+                        apis: [],
+                        functions: []
+                    },
+                    variables: []
+                };
+                
+                // Coleta dados básicos
+                const nameInput = card.querySelector('#prompt_name');
+                if (nameInput) data.name = nameInput.value;
+                
+                const personaInput = card.querySelector('#agent_persona');
+                if (personaInput) data.agent_persona = personaInput.value;
+                
+                const systemPromptInput = card.querySelector('#base_system_prompt');
+                if (systemPromptInput) data.base_system_prompt = systemPromptInput.value;
+                
+                // Coleta prompts específicos por tarefa
+                card.querySelectorAll('.task-prompt').forEach(taskPrompt => {
+                    const label = taskPrompt.querySelector('label').textContent.toLowerCase();
+                    const content = taskPrompt.querySelector('textarea').value;
+                    data.task_prompts[label] = content;
+                });
+                
+                // Coleta APIs
+                card.querySelectorAll('#api_tools .tool-item').forEach(item => {
+                    const inputs = item.querySelectorAll('input, select');
+                    data.external_tools.apis.push({
+                        name: inputs[0].value,
+                        endpoint: inputs[1].value,
+                        method: inputs[2].value
+                    });
+                });
+                
+                // Coleta Functions
+                card.querySelectorAll('#function_tools .tool-item').forEach(item => {
+                    const inputs = item.querySelectorAll('input');
+                    data.external_tools.functions.push({
+                        name: inputs[0].value,
+                        parameters: inputs[1].value.split(',').map(p => p.trim())
+                    });
+                });
+                
+                // Coleta Variáveis
+                card.querySelectorAll('.variable-item').forEach(item => {
+                    const inputs = item.querySelectorAll('input, select');
+                    data.variables.push({
+                        name: inputs[0].value,
+                        type: inputs[1].value,
+                        default_value: inputs[2].value
+                    });
+                });
+                
+                console.log('Dados coletados:', data);
+                
+                // Aqui você pode implementar o envio dos dados para o servidor
+                showNotification('Template configurado com sucesso!', 'success');
+                
+                // Remove o card com animação
+                card.closest('.message').classList.add('slide-up');
+                setTimeout(() => {
+                    card.closest('.message').remove();
+                }, 300);
+            }
+
+            // Função para mostrar notificações
+            function showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                    <span>${message}</span>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.add('active');
+                }, 100);
+                
+                setTimeout(() => {
+                    notification.classList.remove('active');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 3000);
+            }
+
+            // Funções para manipular elementos dinâmicos do card
+            function addToolItem(type) {
+                const container = document.getElementById(`${type}_tools`);
+                const newItem = document.createElement('div');
+                newItem.className = 'tool-item';
+                
+                if (type === 'api') {
+                    newItem.innerHTML = `
+                        <input type="text" placeholder="Nome da API (ex: weather_api)" class="input-field">
+                        <button type="button" class="btn-secondary btn-small" onclick="removeToolItem(this)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    `;
+                } else if (type === 'function') {
+                    newItem.innerHTML = `
+                        <input type="text" placeholder="Nome da Função (ex: search_database)" class="input-field">
+                        <button type="button" class="btn-secondary btn-small" onclick="removeToolItem(this)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    `;
+                }
+                
+                container.appendChild(newItem);
+            }
+
+            function removeToolItem(button) {
+                button.closest('.tool-item').remove();
+            }
+
+            function addVariable() {
+                const container = document.getElementById('variables_list');
+                const newItem = document.createElement('div');
+                newItem.className = 'variable-item';
+                newItem.innerHTML = `
+                    <input type="text" placeholder="Nome da Variável (ex: max_tokens)" class="input-field">
+                    <select class="input-field">
+                        <option value="string">String</option>
+                        <option value="number">Number</option>
+                        <option value="boolean">Boolean</option>
+                        <option value="array">Array</option>
+                        <option value="object">Object</option>
+                    </select>
+                    <button type="button" class="btn-secondary btn-small" onclick="removeToolItem(this)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                `;
+                container.appendChild(newItem);
+            }
+        });
+    </script>
+
+    <!-- Template para cards interativos -->
+    <template id="interactive-card-template">
+        <div class="interactive-card">
+            <div class="interactive-card-header">
+                <i class="fas"></i>
+                <h3></h3>
+            </div>
+            <div class="interactive-card-content">
+                <!-- O conteúdo será inserido dinamicamente -->
+            </div>
+            <div class="interactive-card-footer">
+                <button class="btn-secondary close-card">
+                    <i class="fas fa-times"></i>
+                    Fechar
+                </button>
+                <button class="btn-primary save-card">
+                    <i class="fas fa-save"></i>
+                    Salvar
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template para badges de comando -->
+    <template id="command-badge-template">
+        <div class="command-badge">
+            <i class="fas"></i>
+            <span></span>
+        </div>
+    </template>
+</body>
+</html>

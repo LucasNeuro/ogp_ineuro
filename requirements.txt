@@ -1,0 +1,30 @@
+# Framework e servidor
+fastapi==0.109.1
+uvicorn==0.27.0
+python-dotenv==1.0.0
+python-multipart==0.0.9
+jinja2==3.1.3
+aiofiles>=23.2.1
+
+# Banco de dados
+supabase>=2.0.0
+postgrest>=0.10.0
+gotrue>=2.0.0
+
+# Clientes HTTP
+requests>=2.31.0
+httpx>=0.25.2,<0.26.0
+httpx-sse>=0.4.0
+
+# LLMs
+anthropic>=0.18.1
+mistralai>=0.0.12
+google-generativeai>=0.3.2
+openai>=1.12.0
+
+# Utilitários
+pydantic==2.6.1
+pydantic-settings==2.1.0
+aiohttp==3.9.3
+websockets==12.0
+rich>=13.7.0 
