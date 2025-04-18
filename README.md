@@ -1,16 +1,25 @@
-# Agente WhatsApp MCP
+# I-Neuro: Assistente Virtual Inteligente
 
-Um agente de atendimento para WhatsApp que utiliza a MegaAPI para comunicação, Supabase para armazenamento, Mistral para geração de respostas e MCP para funcionalidades avançadas.
+Um assistente virtual avançado que combina múltiplos modelos de linguagem (LLMs) com uma interface web moderna e integração com WhatsApp.
 
-## 🚀 Instalação
+## 🚀 Funcionalidades
+
+- **Multi-LLM**: Suporte a diversos modelos (Claude, GPT-4, Gemini, DeepSeek)
+- **Interface Web Moderna**: Design system próprio com UI/UX otimizada
+- **Integração WhatsApp**: Comunicação direta via WhatsApp
+- **Base de Conhecimento**: Sistema para gestão de documentos e contexto
+- **Memória Persistente**: Armazenamento de conversas e contextos
+- **Personalização**: Sistema de prompts e personalidades customizáveis
+
+## 📦 Instalação
 
 1. Clone o repositório:
 ```bash
-git clone [seu-repositorio]
-cd agent_whatsapp
+git clone https://github.com/LucasNeuro/ogp_ineuro.git
+cd ogp_ineuro
 ```
 
-2. Crie um ambiente virtual e ative-o:
+2. Crie e ative o ambiente virtual:
 ```bash
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
@@ -23,59 +32,70 @@ pip install -r requirements.txt
 ```
 
 4. Configure as variáveis de ambiente:
-- Copie o arquivo `.env.example` para `.env`
-- Preencha as variáveis com suas credenciais:
-  - MegaAPI
-  - Supabase
-  - Mistral API
-  - MCP
+- Copie `.env.example` para `.env`
+- Configure as chaves de API:
+  - Anthropic (Claude)
+  - OpenAI (GPT-4)
+  - Google (Gemini)
+  - DeepSeek
+  - WhatsApp Business API
 
 ## 🏃‍♂️ Executando
 
 1. Inicie o servidor:
 ```bash
-uvicorn app.main:app --reload
+python run.py
 ```
 
-2. Acesse a documentação da API:
+2. Acesse a interface web:
 ```
-http://localhost:8000/docs
+http://localhost:5000
 ```
 
-## 📋 Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
-agent_whatsapp/
+ogp_ineuro/
 ├── app/
-│   ├── main.py                  # Entrypoint da API FastAPI
-│   ├── whatsapp.py             # Recebe e envia mensagens via MegaAPI
-│   ├── mistral_client.py        # Conecta com a API do Mistral
-│   ├── supabase_client.py       # Manipula mensagens no Supabase
-│   ├── mcp_client.py            # Cliente para se conectar a servidores MCP
-│   ├── settings.py             # Carrega variáveis do .env
-│   └── utils.py                # Funções auxiliares
+│   ├── static/
+│   │   ├── styles.css          # Design system e estilos
+│   │   ├── script.js           # JavaScript da interface
+│   │   └── design_system.md    # Documentação do design
+│   ├── templates/
+│   │   ├── chat.html          # Interface principal
+│   │   └── design_system.html # Documentação visual
+│   ├── main.py               # Servidor principal
+│   ├── llm_router.py         # Gerenciamento de LLMs
+│   ├── agent.py             # Lógica do assistente
+│   ├── memory_agent.py      # Sistema de memória
+│   ├── database.py          # Persistência de dados
+│   ├── whatsapp.py         # Integração WhatsApp
+│   └── command_handler.py   # Processamento de comandos
 ├── requirements.txt
-├── .env
 └── README.md
 ```
 
-## 🔧 Configuração do Webhook
+## 🛠️ Tecnologias
 
-1. Configure o webhook da MegaAPI para apontar para:
-```
-http://seu-dominio/webhook
-```
+- **Backend**: Python, FastAPI
+- **Frontend**: HTML5, CSS3, JavaScript
+- **LLMs**: Claude, GPT-4, Gemini, DeepSeek
+- **WebSocket**: Comunicação em tempo real
+- **Design**: Sistema de design próprio
 
-2. Certifique-se de que o endpoint `/webhook` está acessível publicamente.
+## 🤝 Contribuindo
 
-## 🤖 Funcionalidades
-
-- Recebimento de mensagens via MegaAPI
-- Armazenamento de histórico no Supabase
-- Geração de respostas com Mistral
-- Integração com servidores MCP
-- Endpoint de teste via Swagger
+1. Faça um Fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
 ## 📝 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes. 
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 🔗 Links Úteis
+
+- [Documentação do Design System](app/static/design_system.md)
+- [Guia de Desenvolvimento](app/static/progress.md) 
